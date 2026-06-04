@@ -1,0 +1,189 @@
+/* ==========================================================================
+   Before After Image Slider Widget CSS
+   ========================================================================== */
+
+.ecma-before-after-container {
+	position: relative;
+	overflow: hidden;
+	width: 100%;
+	height: 400px; /* Default height */
+	user-select: none;
+	-webkit-user-select: none;
+	box-sizing: border-box;
+}
+
+/* Image Wrappers */
+.ecma-after-wrapper,
+.ecma-before-wrapper {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+}
+
+.ecma-after-wrapper {
+	z-index: 1;
+}
+
+.ecma-before-wrapper {
+	z-index: 2;
+	/* clip-path is updated in real-time by JavaScript */
+	clip-path: inset(0 50% 0 0);
+}
+
+.ecma-before-after-container img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	pointer-events: none;
+}
+
+/* Text Label Overlays */
+.ecma-before-after-container .ecma-label {
+	position: absolute;
+	z-index: 3;
+	padding: 6px 14px;
+	background: rgba(15, 23, 42, 0.45);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	color: #ffffff;
+	font-family: inherit;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	border-radius: 6px;
+	pointer-events: none;
+	box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+	transition: opacity 0.3s ease, transform 0.3s ease;
+	opacity: 0.9;
+}
+
+.ecma-before-after-container.ecma-label-hover .ecma-label {
+	opacity: 0;
+	transform: scale(0.95);
+}
+
+.ecma-before-after-container.ecma-label-hover:hover .ecma-label {
+	opacity: 0.9;
+	transform: scale(1);
+}
+
+.ecma-before-after-container.dragging .ecma-label {
+	opacity: 0 !important;
+	transform: scale(0.95) !important;
+}
+
+.ecma-before-after-container .ecma-label-before {
+	top: 15px;
+	left: 15px;
+}
+
+.ecma-before-after-container .ecma-label-after {
+	top: 15px;
+	right: 15px;
+}
+
+/* Vertical orientation label positioning adjustment */
+.ecma-before-after-container[data-orientation="vertical"] .ecma-label-after {
+	bottom: 15px;
+	right: 15px;
+	top: auto;
+}
+
+/* Slider Handle styling */
+.ecma-slider-handle {
+	position: absolute;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	touch-action: none;
+}
+
+/* Horizontal Slider settings */
+.ecma-before-after-container[data-orientation="horizontal"] .ecma-slider-handle {
+	width: 40px; /* Touch area width */
+	height: 100%;
+	top: 0;
+	left: 50%;
+	margin-left: -20px;
+	cursor: ew-resize;
+	flex-direction: column;
+}
+
+.ecma-before-after-container[data-orientation="horizontal"] .ecma-slider-handle-line {
+	width: var(--ecma-handle-bar-thickness, 3px);
+	height: 100%;
+	background-color: #ffffff;
+	flex: 1;
+	box-shadow: 0 0 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Vertical Slider settings */
+.ecma-before-after-container[data-orientation="vertical"] .ecma-slider-handle {
+	height: 40px; /* Touch area height */
+	width: 100%;
+	left: 0;
+	top: 50%;
+	margin-top: -20px;
+	cursor: ns-resize;
+	flex-direction: row;
+}
+
+.ecma-before-after-container[data-orientation="vertical"] .ecma-slider-handle-line {
+	height: var(--ecma-handle-bar-thickness, 3px);
+	width: 100%;
+	background-color: #ffffff;
+	flex: 1;
+	box-shadow: 0 0 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Handle Circle styling */
+.ecma-slider-handle-circle {
+	width: 40px;
+	height: 40px;
+	background-color: #ffffff;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+	flex-shrink: 0;
+	transition: transform 0.15s ease;
+	pointer-events: none; /* Make drag work on handle container touch area */
+	animation: ecma-handle-pulse 2.2s infinite;
+}
+
+.ecma-slider-handle:hover .ecma-slider-handle-circle,
+.ecma-before-after-container.dragging .ecma-slider-handle-circle {
+	transform: scale(1.1);
+	animation: none;
+}
+
+.ecma-slider-handle-circle svg {
+	display: block;
+	pointer-events: none;
+}
+
+.ecma-slider-handle-circle svg path {
+	fill: #333333;
+}
+
+/* Handle Pulse Keyframes */
+@keyframes ecma-handle-pulse {
+	0% {
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25), 0 0 0 0 rgba(255, 255, 255, 0.6);
+	}
+	70% {
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25), 0 0 0 12px rgba(255, 255, 255, 0);
+	}
+	100% {
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25), 0 0 0 0 rgba(255, 255, 255, 0);
+	}
+}

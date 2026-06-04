@@ -1,0 +1,1552 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
+/**
+ * Dynamic Data Table Elementor Widget.
+ */
+class ECMA_Dynamic_Data_Table_Widget extends \Elementor\Widget_Base {
+
+	/**
+	 * Get widget name.
+	 *
+	 * @return string Widget name.
+	 */
+	public function get_name() {
+		return 'ecma-dynamic-data-table';
+	}
+
+	/**
+	 * Get widget title.
+	 *
+	 * @return string Widget title.
+	 */
+	public function get_title() {
+		return esc_html__( 'ECMA - Dynamic Data Table', 'e-com-addons' );
+	}
+
+	/**
+	 * Get widget icon.
+	 *
+	 * @return string Widget icon.
+	 */
+	public function get_icon() {
+		return 'eicon-table';
+	}
+
+	/**
+	 * Get widget categories.
+	 *
+	 * @return array Widget categories.
+	 */
+	public function get_categories() {
+		return [ 'ecma-addons', 'general' ];
+	}
+
+	/**
+	 * Get style dependencies.
+	 *
+	 * @return array Style dependencies.
+	 */
+	public function get_style_depends() {
+		return [ 'ecma-table-style' ];
+	}
+
+	/**
+	 * Get script dependencies.
+	 *
+	 * @return array Script dependencies.
+	 */
+	public function get_script_depends() {
+		return [ 'ecma-table-script' ];
+	}
+
+	/**
+	 * Register widget controls.
+	 */
+	protected function register_controls() {
+
+		// ==========================================
+		// CONTENT TAB
+		// ==========================================
+
+		// Table Settings Section
+		$this->start_controls_section(
+			'section_table_settings',
+			[
+				'label' => esc_html__( 'Table Settings', 'e-com-addons' ),
+				'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+			]
+		);
+
+		$this->add_control(
+			'table_mode',
+			[
+				'label'   => esc_html__( 'Table Mode', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::SELECT,
+				'default' => 'manual',
+				'options' => [
+					'manual'  => esc_html__( 'Manual Table Mode', 'e-com-addons' ),
+					'dynamic' => esc_html__( 'Dynamic Data Mode', 'e-com-addons' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'highlighted_rows',
+			[
+				'label'       => esc_html__( 'Highlighted Rows', 'e-com-addons' ),
+				'type'        => \Elementor\Controls_Manager::TEXT,
+				'placeholder' => 'e.g. 2, 4',
+				'description' => esc_html__( 'Comma-separated list of row numbers to highlight (1-indexed).', 'e-com-addons' ),
+			]
+		);
+
+		$this->end_controls_section();
+
+		// Columns Repeater Section
+		$this->start_controls_section(
+			'section_columns',
+			[
+				'label' => esc_html__( 'Table Columns', 'e-com-addons' ),
+				'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+			]
+		);
+
+		$columns_repeater = new \Elementor\Repeater();
+
+		$columns_repeater->add_control(
+			'col_id',
+			[
+				'label'   => esc_html__( 'Column ID', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::TEXT,
+				'default' => 'col_1',
+				'description' => esc_html__( 'Unique alphanumeric key (e.g. col_1, name, price).', 'e-com-addons' ),
+			]
+		);
+
+		$columns_repeater->add_control(
+			'col_title',
+			[
+				'label'   => esc_html__( 'Column Title', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::TEXT,
+				'default' => esc_html__( 'Column Heading', 'e-com-addons' ),
+			]
+		);
+
+		$columns_repeater->add_control(
+			'col_width',
+			[
+				'label' => esc_html__( 'Column Width', 'e-com-addons' ),
+				'type'  => \Elementor\Controls_Manager::TEXT,
+				'placeholder' => 'e.g. 150px or 25%',
+			]
+		);
+
+		$columns_repeater->add_control(
+			'col_align',
+			[
+				'label'   => esc_html__( 'Alignment', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::CHOOSE,
+				'options' => [
+					'left' => [
+						'title' => esc_html__( 'Left', 'e-com-addons' ),
+						'icon'  => 'eicon-text-align-left',
+					],
+					'center' => [
+						'title' => esc_html__( 'Center', 'e-com-addons' ),
+						'icon'  => 'eicon-text-align-center',
+					],
+					'right' => [
+						'title' => esc_html__( 'Right', 'e-com-addons' ),
+						'icon'  => 'eicon-text-align-right',
+					],
+				],
+				'default' => 'left',
+			]
+		);
+
+		$columns_repeater->add_control(
+			'highlight_col',
+			[
+				'label'        => esc_html__( 'Highlight Column', 'e-com-addons' ),
+				'type'         => \Elementor\Controls_Manager::SWITCHER,
+				'return_value' => 'yes',
+				'default'      => 'no',
+			]
+		);
+
+		$columns_repeater->add_control(
+			'recommended_badge',
+			[
+				'label'        => esc_html__( 'Recommended Plan Badge', 'e-com-addons' ),
+				'type'         => \Elementor\Controls_Manager::SWITCHER,
+				'return_value' => 'yes',
+				'default'      => 'no',
+			]
+		);
+
+		$columns_repeater->add_control(
+			'recommended_badge_text',
+			[
+				'label'     => esc_html__( 'Badge Text', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::TEXT,
+				'default'   => esc_html__( 'Recommended', 'e-com-addons' ),
+				'condition' => [
+					'recommended_badge' => 'yes',
+				],
+			]
+		);
+
+		// Dynamic Source (Used in Dynamic Mode)
+		$columns_repeater->add_control(
+			'data_source',
+			[
+				'label'   => esc_html__( 'Data Source (Dynamic)', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::SELECT,
+				'default' => 'post_title',
+				'options' => [
+					'post_title'     => esc_html__( 'Post Title', 'e-com-addons' ),
+					'post_excerpt'   => esc_html__( 'Post Excerpt', 'e-com-addons' ),
+					'post_date'      => esc_html__( 'Post Date', 'e-com-addons' ),
+					'post_author'    => esc_html__( 'Post Author', 'e-com-addons' ),
+					'featured_image' => esc_html__( 'Featured Image', 'e-com-addons' ),
+					'custom_field'   => esc_html__( 'Custom Field / ACF', 'e-com-addons' ),
+					'taxonomy'       => esc_html__( 'Taxonomy Terms', 'e-com-addons' ),
+					'woo_price'      => esc_html__( 'WooCommerce Price', 'e-com-addons' ),
+					'woo_sku'        => esc_html__( 'WooCommerce SKU', 'e-com-addons' ),
+					'woo_stock'      => esc_html__( 'WooCommerce Stock Status', 'e-com-addons' ),
+				],
+			]
+		);
+
+		$columns_repeater->add_control(
+			'custom_field_key',
+			[
+				'label'     => esc_html__( 'Custom Field Key', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::TEXT,
+				'condition' => [
+					'data_source' => 'custom_field',
+				],
+			]
+		);
+
+		$columns_repeater->add_control(
+			'taxonomy_slug',
+			[
+				'label'     => esc_html__( 'Taxonomy Slug', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::TEXT,
+				'default'   => 'category',
+				'condition' => [
+					'data_source' => 'taxonomy',
+				],
+			]
+		);
+
+		$columns_repeater->add_control(
+			'cell_type',
+			[
+				'label'   => esc_html__( 'Cell Content Type', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::SELECT,
+				'default' => 'text',
+				'options' => [
+					'text'   => esc_html__( 'Standard Text', 'e-com-addons' ),
+					'image'  => esc_html__( 'Image', 'e-com-addons' ),
+					'icon'   => esc_html__( 'Icon', 'e-com-addons' ),
+					'button' => esc_html__( 'Button', 'e-com-addons' ),
+					'badge'  => esc_html__( 'Status Badge', 'e-com-addons' ),
+				],
+			]
+		);
+
+		// Sub-settings for Image cells
+		$columns_repeater->add_control(
+			'image_size',
+			[
+				'label'     => esc_html__( 'Image Size', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::SELECT,
+				'default'   => 'thumbnail',
+				'options'   => [
+					'thumbnail' => esc_html__( 'Thumbnail (150x150)', 'e-com-addons' ),
+					'medium'    => esc_html__( 'Medium (300x300)', 'e-com-addons' ),
+					'full'      => esc_html__( 'Full Size', 'e-com-addons' ),
+				],
+				'condition' => [
+					'cell_type' => 'image',
+				],
+			]
+		);
+
+		$columns_repeater->add_control(
+			'image_border_radius',
+			[
+				'label'     => esc_html__( 'Image Border Radius', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::SLIDER,
+				'default'   => [
+					'size' => 4,
+				],
+				'condition' => [
+					'cell_type' => 'image',
+				],
+			]
+		);
+
+		// Sub-settings for Button cells
+		$columns_repeater->add_control(
+			'btn_text',
+			[
+				'label'     => esc_html__( 'Button Text', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::TEXT,
+				'default'   => esc_html__( 'View Details', 'e-com-addons' ),
+				'condition' => [
+					'cell_type' => 'button',
+				],
+			]
+		);
+
+		$columns_repeater->add_control(
+			'btn_link_source',
+			[
+				'label'     => esc_html__( 'Button Link Source', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::SELECT,
+				'default'   => 'post_url',
+				'options'   => [
+					'post_url'     => esc_html__( 'Current Post URL (Dynamic)', 'e-com-addons' ),
+					'custom_field' => esc_html__( 'Custom Field URL (Dynamic)', 'e-com-addons' ),
+					'static'       => esc_html__( 'Static URL', 'e-com-addons' ),
+				],
+				'condition' => [
+					'cell_type' => 'button',
+				],
+			]
+		);
+
+		$columns_repeater->add_control(
+			'btn_static_url',
+			[
+				'label'     => esc_html__( 'Static Link URL', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::URL,
+				'placeholder' => 'https://your-link.com',
+				'condition' => [
+					'cell_type'       => 'button',
+					'btn_link_source' => 'static',
+				],
+			]
+		);
+
+		$columns_repeater->add_control(
+			'btn_custom_field_link',
+			[
+				'label'     => esc_html__( 'Custom Field for Link', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::TEXT,
+				'placeholder' => 'e.g. aff_link',
+				'condition' => [
+					'cell_type'       => 'button',
+					'btn_link_source' => 'custom_field',
+				],
+			]
+		);
+
+		$columns_repeater->add_control(
+			'btn_target',
+			[
+				'label'        => esc_html__( 'Open in new window', 'e-com-addons' ),
+				'type'         => \Elementor\Controls_Manager::SWITCHER,
+				'return_value' => 'yes',
+				'default'      => 'no',
+				'condition'    => [
+					'cell_type' => 'button',
+				],
+			]
+		);
+
+		// Sub-settings for Badge cells
+		$columns_repeater->add_control(
+			'badge_style_type',
+			[
+				'label'     => esc_html__( 'Badge Style Type', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::SELECT,
+				'default'   => 'popular',
+				'options'   => [
+					'popular'     => esc_html__( 'Popular (Indigo)', 'e-com-addons' ),
+					'best-seller' => esc_html__( 'Best Seller (Orange)', 'e-com-addons' ),
+					'featured'    => esc_html__( 'Featured (Emerald)', 'e-com-addons' ),
+					'new'         => esc_html__( 'New (Sky Blue)', 'e-com-addons' ),
+					'custom'      => esc_html__( 'Custom Styles', 'e-com-addons' ),
+				],
+				'condition' => [
+					'cell_type' => 'badge',
+				],
+			]
+		);
+
+		$columns_repeater->add_control(
+			'badge_bg_color',
+			[
+				'label'     => esc_html__( 'Badge Background Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#6366f1',
+				'condition' => [
+					'cell_type'        => 'badge',
+					'badge_style_type' => 'custom',
+				],
+			]
+		);
+
+		$columns_repeater->add_control(
+			'badge_text_color',
+			[
+				'label'     => esc_html__( 'Badge Text Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#ffffff',
+				'condition' => [
+					'cell_type'        => 'badge',
+					'badge_style_type' => 'custom',
+				],
+			]
+		);
+
+		// Sub-settings for Icon cells
+		$columns_repeater->add_control(
+			'cell_icon',
+			[
+				'label'     => esc_html__( 'Feature Icon', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::ICONS,
+				'default'   => [
+					'value'   => 'fas fa-check',
+					'library' => 'solid',
+				],
+				'condition' => [
+					'cell_type' => 'icon',
+				],
+			]
+		);
+
+		$this->add_control(
+			'table_columns',
+			[
+				'label'       => esc_html__( 'Define Columns', 'e-com-addons' ),
+				'type'        => \Elementor\Controls_Manager::REPEATER,
+				'fields'      => $columns_repeater->get_controls(),
+				'title_field' => '{{{ col_title }}} ({{{ col_id }}})',
+				'default'     => [
+					[
+						'col_id'    => 'col_1',
+						'col_title' => esc_html__( 'Features', 'e-com-addons' ),
+						'col_width' => '40%',
+					],
+					[
+						'col_id'    => 'col_2',
+						'col_title' => esc_html__( 'Basic Plan', 'e-com-addons' ),
+						'col_width' => '30%',
+					],
+					[
+						'col_id'    => 'col_3',
+						'col_title' => esc_html__( 'Pro Plan', 'e-com-addons' ),
+						'col_width' => '30%',
+					],
+				],
+			]
+		);
+
+		$this->end_controls_section();
+
+		// Cells Repeater Section (Manual Mode Only)
+		$this->start_controls_section(
+			'section_cells',
+			[
+				'label'     => esc_html__( 'Table Cells (Manual Mode)', 'e-com-addons' ),
+				'tab'       => \Elementor\Controls_Manager::TAB_CONTENT,
+				'condition' => [
+					'table_mode' => 'manual',
+				],
+			]
+		);
+
+		$cells_repeater = new \Elementor\Repeater();
+
+		$cells_repeater->add_control(
+			'row_index',
+			[
+				'label'   => esc_html__( 'Row Index (e.g. 1, 2)', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::NUMBER,
+				'default' => 1,
+				'min'     => 1,
+			]
+		);
+
+		$cells_repeater->add_control(
+			'col_id',
+			[
+				'label'       => esc_html__( 'Column ID', 'e-com-addons' ),
+				'type'        => \Elementor\Controls_Manager::TEXT,
+				'default'     => 'col_1',
+				'description' => esc_html__( 'Enter the exact ID of the column defined above.', 'e-com-addons' ),
+			]
+		);
+
+		$cells_repeater->add_control(
+			'cell_type',
+			[
+				'label'   => esc_html__( 'Cell Type', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::SELECT,
+				'default' => 'text',
+				'options' => [
+					'text'   => esc_html__( 'Standard Text', 'e-com-addons' ),
+					'image'  => esc_html__( 'Image', 'e-com-addons' ),
+					'icon'   => esc_html__( 'Icon', 'e-com-addons' ),
+					'button' => esc_html__( 'Button', 'e-com-addons' ),
+					'badge'  => esc_html__( 'Status Badge', 'e-com-addons' ),
+				],
+			]
+		);
+
+		$cells_repeater->add_control(
+			'cell_text',
+			[
+				'label'     => esc_html__( 'Text Content', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::TEXTAREA,
+				'default'   => esc_html__( 'Cell value', 'e-com-addons' ),
+				'condition' => [
+					'cell_type' => 'text',
+				],
+				'dynamic' => [
+					'active' => true,
+				],
+			]
+		);
+
+		$cells_repeater->add_control(
+			'cell_image',
+			[
+				'label'     => esc_html__( 'Cell Image', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::MEDIA,
+				'default'   => [
+					'url' => \Elementor\Utils::get_placeholder_image_src(),
+				],
+				'condition' => [
+					'cell_type' => 'image',
+				],
+			]
+		);
+
+		$cells_repeater->add_control(
+			'image_size',
+			[
+				'label'     => esc_html__( 'Image Size', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::SELECT,
+				'default'   => 'thumbnail',
+				'options'   => [
+					'thumbnail' => esc_html__( 'Thumbnail (150x150)', 'e-com-addons' ),
+					'medium'    => esc_html__( 'Medium (300x300)', 'e-com-addons' ),
+					'full'      => esc_html__( 'Full Size', 'e-com-addons' ),
+				],
+				'condition' => [
+					'cell_type' => 'image',
+				],
+			]
+		);
+
+		$cells_repeater->add_control(
+			'cell_icon',
+			[
+				'label'     => esc_html__( 'Cell Icon', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::ICONS,
+				'default'   => [
+					'value'   => 'fas fa-check',
+					'library' => 'solid',
+				],
+				'condition' => [
+					'cell_type' => 'icon',
+				],
+			]
+		);
+
+		$cells_repeater->add_control(
+			'btn_text',
+			[
+				'label'     => esc_html__( 'Button Text', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::TEXT,
+				'default'   => esc_html__( 'View Details', 'e-com-addons' ),
+				'condition' => [
+					'cell_type' => 'button',
+				],
+			]
+		);
+
+		$cells_repeater->add_control(
+			'btn_url',
+			[
+				'label'     => esc_html__( 'Button Link URL', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::URL,
+				'placeholder' => 'https://your-link.com',
+				'condition' => [
+					'cell_type' => 'button',
+				],
+			]
+		);
+
+		$cells_repeater->add_control(
+			'badge_text',
+			[
+				'label'     => esc_html__( 'Badge Text', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::TEXT,
+				'default'   => esc_html__( 'New', 'e-com-addons' ),
+				'condition' => [
+					'cell_type' => 'badge',
+				],
+			]
+		);
+
+		$cells_repeater->add_control(
+			'badge_style_type',
+			[
+				'label'     => esc_html__( 'Badge Style Type', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::SELECT,
+				'default'   => 'popular',
+				'options'   => [
+					'popular'     => esc_html__( 'Popular (Indigo)', 'e-com-addons' ),
+					'best-seller' => esc_html__( 'Best Seller (Orange)', 'e-com-addons' ),
+					'featured'    => esc_html__( 'Featured (Emerald)', 'e-com-addons' ),
+					'new'         => esc_html__( 'New (Sky Blue)', 'e-com-addons' ),
+					'custom'      => esc_html__( 'Custom Styles', 'e-com-addons' ),
+				],
+				'condition' => [
+					'cell_type' => 'badge',
+				],
+			]
+		);
+
+		$cells_repeater->add_control(
+			'badge_bg_color',
+			[
+				'label'     => esc_html__( 'Badge Background Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#6366f1',
+				'condition' => [
+					'cell_type'        => 'badge',
+					'badge_style_type' => 'custom',
+				],
+			]
+		);
+
+		$cells_repeater->add_control(
+			'badge_text_color',
+			[
+				'label'     => esc_html__( 'Badge Text Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#ffffff',
+				'condition' => [
+					'cell_type'        => 'badge',
+					'badge_style_type' => 'custom',
+				],
+			]
+		);
+
+		$this->add_control(
+			'table_cells',
+			[
+				'label'       => esc_html__( 'Populate Cells', 'e-com-addons' ),
+				'type'        => \Elementor\Controls_Manager::REPEATER,
+				'fields'      => $cells_repeater->get_controls(),
+				'title_field' => 'Row {{{ row_index }}} - Column {{{ col_id }}}',
+				'default'     => [
+					// Row 1
+					[ 'row_index' => 1, 'col_id' => 'col_1', 'cell_type' => 'text', 'cell_text' => 'Projects Limit' ],
+					[ 'row_index' => 1, 'col_id' => 'col_2', 'cell_type' => 'text', 'cell_text' => '5 Projects' ],
+					[ 'row_index' => 1, 'col_id' => 'col_3', 'cell_type' => 'text', 'cell_text' => '50 Projects' ],
+					// Row 2
+					[ 'row_index' => 2, 'col_id' => 'col_1', 'cell_type' => 'text', 'cell_text' => 'Support Hours' ],
+					[ 'row_index' => 2, 'col_id' => 'col_2', 'cell_type' => 'badge', 'badge_text' => 'Email Only', 'badge_style_type' => 'new' ],
+					[ 'row_index' => 2, 'col_id' => 'col_3', 'cell_type' => 'badge', 'badge_text' => '24/7 Phone', 'badge_style_type' => 'featured' ],
+					// Row 3
+					[ 'row_index' => 3, 'col_id' => 'col_1', 'cell_type' => 'text', 'cell_text' => 'Sign Up' ],
+					[ 'row_index' => 3, 'col_id' => 'col_2', 'cell_type' => 'button', 'btn_text' => 'Get Basic', 'btn_url' => [ 'url' => '#' ] ],
+					[ 'row_index' => 3, 'col_id' => 'col_3', 'cell_type' => 'button', 'btn_text' => 'Go Pro', 'btn_url' => [ 'url' => '#' ] ],
+				],
+			]
+		);
+
+		$this->end_controls_section();
+
+		// ==========================================
+		// QUERY TAB (Dynamic Mode Only)
+		// ==========================================
+		$this->start_controls_section(
+			'section_query',
+			[
+				'label'     => esc_html__( 'Data Query (Dynamic Mode)', 'e-com-addons' ),
+				'tab'       => \Elementor\Controls_Manager::TAB_CONTENT,
+				'condition' => [
+					'table_mode' => 'dynamic',
+				],
+			]
+		);
+
+		$this->add_control(
+			'post_type',
+			[
+				'label'   => esc_html__( 'Post Type', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::SELECT,
+				'default' => 'post',
+				'options' => [
+					'post'    => esc_html__( 'Posts', 'e-com-addons' ),
+					'page'    => esc_html__( 'Pages', 'e-com-addons' ),
+					'product' => esc_html__( 'Products (WooCommerce)', 'e-com-addons' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'posts_per_page',
+			[
+				'label'   => esc_html__( 'Items Limit', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::NUMBER,
+				'default' => 10,
+				'min'     => 1,
+			]
+		);
+
+		$this->add_control(
+			'categories',
+			[
+				'label'       => esc_html__( 'Category Slugs (Comma-separated)', 'e-com-addons' ),
+				'type'        => \Elementor\Controls_Manager::TEXT,
+				'placeholder' => 'e.g. news, products',
+			]
+		);
+
+		$this->add_control(
+			'tags',
+			[
+				'label'       => esc_html__( 'Tag Slugs (Comma-separated)', 'e-com-addons' ),
+				'type'        => \Elementor\Controls_Manager::TEXT,
+				'placeholder' => 'e.g. promo, winter',
+			]
+		);
+
+		$this->add_control(
+			'posts_include',
+			[
+				'label'       => esc_html__( 'Include IDs (Comma-separated)', 'e-com-addons' ),
+				'type'        => \Elementor\Controls_Manager::TEXT,
+				'placeholder' => 'e.g. 101, 102',
+			]
+		);
+
+		$this->add_control(
+			'posts_exclude',
+			[
+				'label'       => esc_html__( 'Exclude IDs (Comma-separated)', 'e-com-addons' ),
+				'type'        => \Elementor\Controls_Manager::TEXT,
+				'placeholder' => 'e.g. 99, 100',
+			]
+		);
+
+		$this->add_control(
+			'orderby',
+			[
+				'label'   => esc_html__( 'Order By', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::SELECT,
+				'default' => 'date',
+				'options' => [
+					'date'          => esc_html__( 'Date Published', 'e-com-addons' ),
+					'ID'            => esc_html__( 'Post ID', 'e-com-addons' ),
+					'title'         => esc_html__( 'Alphabetical Title', 'e-com-addons' ),
+					'modified'      => esc_html__( 'Date Modified', 'e-com-addons' ),
+					'menu_order'    => esc_html__( 'Menu Order', 'e-com-addons' ),
+					'rand'          => esc_html__( 'Random Order', 'e-com-addons' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'order',
+			[
+				'label'   => esc_html__( 'Order', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::SELECT,
+				'default' => 'DESC',
+				'options' => [
+					'ASC'  => esc_html__( 'Ascending', 'e-com-addons' ),
+					'DESC' => esc_html__( 'Descending', 'e-com-addons' ),
+				],
+			]
+		);
+
+		$this->end_controls_section();
+
+		// ==========================================
+		// SETTINGS / FEATURES TAB
+		// ==========================================
+		$this->start_controls_section(
+			'section_features',
+			[
+				'label' => esc_html__( 'Table Features', 'e-com-addons' ),
+				'tab'   => \Elementor\Controls_Manager::TAB_CONTENT,
+			]
+		);
+
+		$this->add_control(
+			'show_search',
+			[
+				'label'        => esc_html__( 'Enable Search Field', 'e-com-addons' ),
+				'type'         => \Elementor\Controls_Manager::SWITCHER,
+				'return_value' => 'yes',
+				'default'      => 'no',
+			]
+		);
+
+		$this->add_control(
+			'search_placeholder',
+			[
+				'label'     => esc_html__( 'Search Placeholder', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::TEXT,
+				'default'   => esc_html__( 'Search rows...', 'e-com-addons' ),
+				'condition' => [
+					'show_search' => 'yes',
+				],
+			]
+		);
+
+		$this->add_control(
+			'enable_sorting',
+			[
+				'label'        => esc_html__( 'Enable Column Sorting', 'e-com-addons' ),
+				'type'         => \Elementor\Controls_Manager::SWITCHER,
+				'return_value' => 'yes',
+				'default'      => 'no',
+			]
+		);
+
+		$this->add_control(
+			'sticky_header',
+			[
+				'label'        => esc_html__( 'Sticky Table Header', 'e-com-addons' ),
+				'type'         => \Elementor\Controls_Manager::SWITCHER,
+				'return_value' => 'yes',
+				'default'      => 'no',
+			]
+		);
+
+		$this->add_control(
+			'sticky_offset',
+			[
+				'label'     => esc_html__( 'Sticky Offset (px)', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::SLIDER,
+				'default'   => [
+					'size' => 0,
+				],
+				'range'     => [
+					'px' => [
+						'min'  => 0,
+						'max'  => 150,
+						'step' => 1,
+					],
+				],
+				'selectors' => [
+					'{{WRAPPER}} .ecma-table-sticky thead th' => 'top: {{SIZE}}px;',
+				],
+				'condition' => [
+					'sticky_header' => 'yes',
+				],
+			]
+		);
+
+		$this->add_control(
+			'responsive_mode',
+			[
+				'label'   => esc_html__( 'Mobile Responsive Mode', 'e-com-addons' ),
+				'type'    => \Elementor\Controls_Manager::SELECT,
+				'default' => 'scroll',
+				'options' => [
+					'scroll' => esc_html__( 'Horizontal Scroll', 'e-com-addons' ),
+					'stack'  => esc_html__( 'Stacked Layout (Cards)', 'e-com-addons' ),
+				],
+			]
+		);
+
+		$this->end_controls_section();
+
+		// ==========================================
+		// STYLE TAB
+		// ==========================================
+
+		// Table Box style
+		$this->start_controls_section(
+			'section_style_table',
+			[
+				'label' => esc_html__( 'Table Layout & Border', 'e-com-addons' ),
+				'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'table_width',
+			[
+				'label'      => esc_html__( 'Table Width', 'e-com-addons' ),
+				'type'       => \Elementor\Controls_Manager::SLIDER,
+				'size_units' => [ '%', 'px' ],
+				'range'      => [
+					'%'  => [ 'min' => 10, 'max' => 100 ],
+					'px' => [ 'min' => 100, 'max' => 1200 ],
+				],
+				'default'    => [
+					'unit' => '%',
+					'size' => 100,
+				],
+				'selectors'  => [
+					'{{WRAPPER}} .ecma-table-container' => 'max-width: {{SIZE}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->add_control(
+			'table_border_radius',
+			[
+				'label'      => esc_html__( 'Border Radius', 'e-com-addons' ),
+				'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%', 'em' ],
+				'selectors'  => [
+					'{{WRAPPER}} .ecma-table-container' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			\Elementor\Group_Control_Border::get_type(),
+			[
+				'name'     => 'table_border',
+				'selector' => '{{WRAPPER}} .ecma-table-container',
+			]
+		);
+
+		$this->add_group_control(
+			\Elementor\Group_Control_Box_Shadow::get_type(),
+			[
+				'name'     => 'table_box_shadow',
+				'selector' => '{{WRAPPER}} .ecma-table-container',
+			]
+		);
+
+		$this->end_controls_section();
+
+		// Header Styling
+		$this->start_controls_section(
+			'section_style_header',
+			[
+				'label' => esc_html__( 'Header Styling', 'e-com-addons' ),
+				'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'header_bg_color',
+			[
+				'label'     => esc_html__( 'Background Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#1f2937',
+				'selectors' => [
+					'{{WRAPPER}} .ecma-data-table thead th' => 'background-color: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_control(
+			'header_text_color',
+			[
+				'label'     => esc_html__( 'Text Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#ffffff',
+				'selectors' => [
+					'{{WRAPPER}} .ecma-data-table thead th, {{WRAPPER}} .ecma-data-table thead th a' => 'color: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			\Elementor\Group_Control_Typography::get_type(),
+			[
+				'name'     => 'header_typography',
+				'selector' => '{{WRAPPER}} .ecma-data-table thead th',
+			]
+		);
+
+		$this->add_responsive_control(
+			'header_padding',
+			[
+				'label'      => esc_html__( 'Padding', 'e-com-addons' ),
+				'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', 'em', '%' ],
+				'default'    => [
+					'top'    => '14',
+					'right'  => '16',
+					'bottom' => '14',
+					'left'   => '16',
+					'unit'   => 'px',
+				],
+				'selectors'  => [
+					'{{WRAPPER}} .ecma-data-table thead th' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->end_controls_section();
+
+		// Rows Styling
+		$this->start_controls_section(
+			'section_style_rows',
+			[
+				'label' => esc_html__( 'Rows Styling', 'e-com-addons' ),
+				'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'row_bg_color',
+			[
+				'label'     => esc_html__( 'Row Background Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#ffffff',
+				'selectors' => [
+					'{{WRAPPER}} .ecma-data-table tbody tr' => 'background-color: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_control(
+			'row_alt_bg_color',
+			[
+				'label'     => esc_html__( 'Zebra Striping (Alternate Row Color)', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#f9fafb',
+				'selectors' => [
+					'{{WRAPPER}} .ecma-data-table tbody tr:nth-child(even)' => 'background-color: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_control(
+			'row_hover_bg_color',
+			[
+				'label'     => esc_html__( 'Hover Background Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#f3f4f6',
+				'selectors' => [
+					'{{WRAPPER}} .ecma-data-table tbody tr:hover' => 'background-color: {{VALUE}} !important;',
+				],
+			]
+		);
+
+		$this->add_control(
+			'row_highlight_bg_color',
+			[
+				'label'     => esc_html__( 'Highlighted Row Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#fef3c7',
+				'selectors' => [
+					'{{WRAPPER}} .ecma-data-table tbody tr.ecma-row-highlight' => 'background-color: {{VALUE}} !important;',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			\Elementor\Group_Control_Border::get_type(),
+			[
+				'name'     => 'row_border',
+				'selector' => '{{WRAPPER}} .ecma-data-table tbody tr',
+			]
+		);
+
+		$this->end_controls_section();
+
+		// Cells Styling
+		$this->start_controls_section(
+			'section_style_cells',
+			[
+				'label' => esc_html__( 'Cell Styling', 'e-com-addons' ),
+				'tab'   => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'cell_text_color',
+			[
+				'label'     => esc_html__( 'Text Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#374151',
+				'selectors' => [
+					'{{WRAPPER}} .ecma-data-table tbody td' => 'color: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			\Elementor\Group_Control_Typography::get_type(),
+			[
+				'name'     => 'cell_typography',
+				'selector' => '{{WRAPPER}} .ecma-data-table tbody td',
+			]
+		);
+
+		$this->add_responsive_control(
+			'cell_padding',
+			[
+				'label'      => esc_html__( 'Padding', 'e-com-addons' ),
+				'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', 'em', '%' ],
+				'default'    => [
+					'top'    => '12',
+					'right'  => '16',
+					'bottom' => '12',
+					'left'   => '16',
+					'unit'   => 'px',
+				],
+				'selectors'  => [
+					'{{WRAPPER}} .ecma-data-table tbody td' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			\Elementor\Group_Control_Border::get_type(),
+			[
+				'name'     => 'cell_border',
+				'selector' => '{{WRAPPER}} .ecma-data-table tbody td',
+			]
+		);
+
+		$this->end_controls_section();
+
+		// Button Styling
+		$this->start_controls_section(
+			'section_style_button',
+			[
+				'label'     => esc_html__( 'Cell Button Styles', 'e-com-addons' ),
+				'tab'       => \Elementor\Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_control(
+			'btn_bg_color',
+			[
+				'label'     => esc_html__( 'Background Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#2563eb',
+				'selectors' => [
+					'{{WRAPPER}} .ecma-btn' => 'background-color: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_control(
+			'btn_hover_bg_color',
+			[
+				'label'     => esc_html__( 'Hover Background Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#1d4ed8',
+				'selectors' => [
+					'{{WRAPPER}} .ecma-btn:hover' => 'background-color: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_control(
+			'btn_text_color',
+			[
+				'label'     => esc_html__( 'Text Color', 'e-com-addons' ),
+				'type'      => \Elementor\Controls_Manager::COLOR,
+				'default'   => '#ffffff',
+				'selectors' => [
+					'{{WRAPPER}} .ecma-btn' => 'color: {{VALUE}};',
+				],
+			]
+		);
+
+		$this->add_control(
+			'btn_border_radius',
+			[
+				'label'      => esc_html__( 'Border Radius', 'e-com-addons' ),
+				'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', '%' ],
+				'default'    => [
+					'top'    => '4',
+					'right'  => '4',
+					'bottom' => '4',
+					'left'   => '4',
+					'unit'   => 'px',
+				],
+				'selectors'  => [
+					'{{WRAPPER}} .ecma-btn' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->add_responsive_control(
+			'btn_padding',
+			[
+				'label'      => esc_html__( 'Padding', 'e-com-addons' ),
+				'type'       => \Elementor\Controls_Manager::DIMENSIONS,
+				'size_units' => [ 'px', 'em' ],
+				'default'    => [
+					'top'    => '8',
+					'right'  => '16',
+					'bottom' => '8',
+					'left'   => '16',
+					'unit'   => 'px',
+				],
+				'selectors'  => [
+					'{{WRAPPER}} .ecma-btn' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+				],
+			]
+		);
+
+		$this->end_controls_section();
+	}
+
+	/**
+	 * Render widget frontend HTML view.
+	 */
+	protected function render() {
+		$settings = $this->get_settings_for_display();
+
+		// Read highlighted rows list
+		$highlighted_rows_list = [];
+		if ( ! empty( $settings['highlighted_rows'] ) ) {
+			$highlighted_rows_list = array_map( 'intval', array_map( 'trim', explode( ',', $settings['highlighted_rows'] ) ) );
+		}
+
+		// Responsive layout class wrapper
+		$responsive_class = 'ecma-table-' . esc_attr( $settings['responsive_mode'] );
+		$sticky_class     = ( 'yes' === $settings['sticky_header'] ) ? 'ecma-table-sticky' : '';
+		?>
+		<div class="ecma-table-wrapper">
+
+			<!-- Dynamic Live Search -->
+			<?php if ( 'yes' === $settings['show_search'] ) : ?>
+				<div class="ecma-table-search-container">
+					<span class="dashicons dashicons-search ecma-search-icon"></span>
+					<input type="text" class="ecma-table-search-input" placeholder="<?php echo esc_attr( $settings['search_placeholder'] ); ?>">
+				</div>
+			<?php endif; ?>
+
+			<!-- Table Element Container -->
+			<div class="ecma-table-container <?php echo $responsive_class; ?> <?php echo $sticky_class; ?>">
+				<table class="ecma-data-table">
+					<thead>
+						<tr>
+							<?php foreach ( $settings['table_columns'] as $col ) :
+								$col_id    = esc_attr( $col['col_id'] );
+								$col_style = '';
+								if ( ! empty( $col['col_width'] ) ) {
+									$col_style .= 'width: ' . esc_attr( $col['col_width'] ) . ';';
+								}
+								if ( ! empty( $col['col_align'] ) ) {
+									$col_style .= 'text-align: ' . esc_attr( $col['col_align'] ) . ';';
+								}
+								$th_class  = ( 'yes' === $col['highlight_col'] ) ? 'ecma-col-highlight' : '';
+								$sortable  = ( 'yes' === $settings['enable_sorting'] ) ? 'data-sortable="true"' : '';
+								?>
+								<th class="<?php echo $th_class; ?>" style="<?php echo $col_style; ?>" <?php echo $sortable; ?> data-col-id="<?php echo $col_id; ?>">
+									<div class="ecma-th-inner">
+										<span class="ecma-th-text"><?php echo esc_html( $col['col_title'] ); ?></span>
+										<?php if ( 'yes' === $settings['enable_sorting'] ) : ?>
+											<span class="ecma-sort-trigger dashicons dashicons-sort"></span>
+										<?php endif; ?>
+									</div>
+									<?php if ( 'yes' === $col['recommended_badge'] ) : ?>
+										<span class="ecma-recommended-badge"><?php echo esc_html( $col['recommended_badge_text'] ); ?></span>
+									<?php endif; ?>
+								</th>
+							<?php endforeach; ?>
+						</tr>
+					</thead>
+					<tbody>
+						<?php
+						if ( 'manual' === $settings['table_mode'] ) {
+							$this->render_manual_rows( $settings, $highlighted_rows_list );
+						} else {
+							$this->render_dynamic_rows( $settings, $highlighted_rows_list );
+						}
+						?>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render table rows using Manual repeater inputs.
+	 */
+	protected function render_manual_rows( $settings, $highlighted_rows_list ) {
+		// Group cells by Row Index
+		$rows = [];
+		if ( ! empty( $settings['table_cells'] ) ) {
+			foreach ( $settings['table_cells'] as $cell ) {
+				$row_idx = intval( $cell['row_index'] );
+				$col_id  = trim( $cell['col_id'] );
+				$rows[ $row_idx ][ $col_id ] = $cell;
+			}
+		}
+
+		ksort( $rows ); // Sort rows chronologically
+
+		foreach ( $rows as $row_idx => $cells_in_row ) {
+			$row_class = in_array( $row_idx, $highlighted_rows_list, true ) ? 'ecma-row-highlight' : '';
+			echo '<tr class="' . esc_attr( $row_class ) . '" data-row-idx="' . intval( $row_idx ) . '">';
+
+			foreach ( $settings['table_columns'] as $col ) {
+				$col_id   = trim( $col['col_id'] );
+				$col_align = ! empty( $col['col_align'] ) ? esc_attr( $col['col_align'] ) : 'left';
+				$td_style = 'text-align: ' . $col_align . ';';
+				$td_class = ( 'yes' === $col['highlight_col'] ) ? 'ecma-col-highlight' : '';
+
+				echo '<td class="' . $td_class . '" style="' . $td_style . '" data-label="' . esc_attr( $col['col_title'] ) . '">';
+
+				if ( isset( $cells_in_row[ $col_id ] ) ) {
+					$cell = $cells_in_row[ $col_id ];
+					$this->render_cell_content( $cell );
+				} else {
+					echo '&nbsp;';
+				}
+
+				echo '</td>';
+			}
+
+			echo '</tr>';
+		}
+	}
+
+	/**
+	 * Render dynamic table rows using WordPress WP_Query posts.
+	 */
+	protected function render_dynamic_rows( $settings, $highlighted_rows_list ) {
+		$args = [
+			'post_type'      => $settings['post_type'],
+			'posts_per_page' => ! empty( $settings['posts_per_page'] ) ? intval( $settings['posts_per_page'] ) : 10,
+			'orderby'        => $settings['orderby'],
+			'order'          => $settings['order'],
+			'post_status'    => 'publish',
+		];
+
+		if ( ! empty( $settings['posts_include'] ) ) {
+			$args['post__in'] = array_map( 'intval', array_map( 'trim', explode( ',', $settings['posts_include'] ) ) );
+		}
+
+		if ( ! empty( $settings['posts_exclude'] ) ) {
+			$args['post__not_in'] = array_map( 'intval', array_map( 'trim', explode( ',', $settings['posts_exclude'] ) ) );
+		}
+
+		$tax_query = [];
+
+		if ( 'product' === $settings['post_type'] ) {
+			if ( ! empty( $settings['categories'] ) ) {
+				$tax_query[] = [
+					'taxonomy' => 'product_cat',
+					'field'    => 'slug',
+					'terms'    => array_map( 'trim', explode( ',', $settings['categories'] ) ),
+				];
+			}
+			if ( ! empty( $settings['tags'] ) ) {
+				$tax_query[] = [
+					'taxonomy' => 'product_tag',
+					'field'    => 'slug',
+					'terms'    => array_map( 'trim', explode( ',', $settings['tags'] ) ),
+				];
+			}
+		} else {
+			if ( ! empty( $settings['categories'] ) ) {
+				$tax_query[] = [
+					'taxonomy' => 'category',
+					'field'    => 'slug',
+					'terms'    => array_map( 'trim', explode( ',', $settings['categories'] ) ),
+				];
+			}
+			if ( ! empty( $settings['tags'] ) ) {
+				$tax_query[] = [
+					'taxonomy' => 'post_tag',
+					'field'    => 'slug',
+					'terms'    => array_map( 'trim', explode( ',', $settings['tags'] ) ),
+				];
+			}
+		}
+
+		if ( ! empty( $tax_query ) ) {
+			$args['tax_query'] = $tax_query;
+		}
+
+		$query = new \WP_Query( $args );
+		$row_idx = 1;
+
+		if ( $query->have_posts() ) {
+			while ( $query->have_posts() ) {
+				$query->the_post();
+				$post_id   = get_the_ID();
+				$row_class = in_array( $row_idx, $highlighted_rows_list, true ) ? 'ecma-row-highlight' : '';
+
+				echo '<tr class="' . esc_attr( $row_class ) . '" data-row-idx="' . intval( $row_idx ) . '">';
+
+				foreach ( $settings['table_columns'] as $col ) {
+					$col_align = ! empty( $col['col_align'] ) ? esc_attr( $col['col_align'] ) : 'left';
+					$td_style = 'text-align: ' . $col_align . ';';
+					$td_class = ( 'yes' === $col['highlight_col'] ) ? 'ecma-col-highlight' : '';
+
+					echo '<td class="' . $td_class . '" style="' . $td_style . '" data-label="' . esc_attr( $col['col_title'] ) . '">';
+
+					// Extract dynamic data value based on source
+					$val = $this->get_dynamic_source_value( $col, $post_id );
+
+					// Format and render as selected cell type
+					$cell_mock = [
+						'cell_type'        => $col['cell_type'],
+						'cell_text'        => $val,
+						'cell_image'       => [ 'url' => $val ],
+						'image_size'       => $col['image_size'],
+						'cell_icon'        => $col['cell_icon'],
+						'btn_text'         => ( 'static' === ( $col['btn_text_source'] ?? 'static' ) ) ? $col['btn_text'] : $val,
+						'btn_url'          => [ 'url' => $this->get_dynamic_button_link( $col, $post_id ) ],
+						'badge_text'       => $val,
+						'badge_style_type' => $col['badge_style_type'],
+						'badge_bg_color'   => $col['badge_bg_color'],
+						'badge_text_color' => $col['badge_text_color'],
+						'image_border_radius' => $col['image_border_radius'],
+						'btn_target'       => $col['btn_target'],
+					];
+
+					$this->render_cell_content( $cell_mock, $post_id );
+
+					echo '</td>';
+				}
+
+				echo '</tr>';
+				$row_idx++;
+			}
+			wp_reset_postdata();
+		} else {
+			$colspan = count( $settings['table_columns'] );
+			echo '<tr><td colspan="' . intval( $colspan ) . '" style="text-align: center;">' . esc_html__( 'No matching posts found.', 'e-com-addons' ) . '</td></tr>';
+		}
+	}
+
+	/**
+	 * Get the link URL for a dynamic button cell.
+	 */
+	protected function get_dynamic_button_link( $col, $post_id ) {
+		$link_source = ! empty( $col['btn_link_source'] ) ? $col['btn_link_source'] : 'post_url';
+		if ( 'post_url' === $link_source ) {
+			return get_permalink( $post_id );
+		} elseif ( 'custom_field' === $link_source && ! empty( $col['btn_custom_field_link'] ) ) {
+			return get_post_meta( $post_id, trim( $col['btn_custom_field_link'] ), true );
+		} elseif ( 'static' === $link_source && ! empty( $col['btn_static_url']['url'] ) ) {
+			return $col['btn_static_url']['url'];
+		}
+		return '#';
+	}
+
+	/**
+	 * Query post databases and extract string content based on configuration options.
+	 */
+	protected function get_dynamic_source_value( $col, $post_id ) {
+		$source = $col['data_source'];
+		switch ( $source ) {
+			case 'post_title':
+				return get_the_title( $post_id );
+			case 'post_excerpt':
+				return get_the_excerpt( $post_id );
+			case 'post_date':
+				return get_the_date( '', $post_id );
+			case 'post_author':
+				$post = get_post( $post_id );
+				return $post ? get_the_author_meta( 'display_name', $post->post_author ) : '';
+			case 'featured_image':
+				return get_the_post_thumbnail_url( $post_id, 'medium' );
+			case 'custom_field':
+				if ( ! empty( $col['custom_field_key'] ) ) {
+					return get_post_meta( $post_id, trim( $col['custom_field_key'] ), true );
+				}
+				return '';
+			case 'taxonomy':
+				if ( ! empty( $col['taxonomy_slug'] ) ) {
+					$terms = get_the_terms( $post_id, trim( $col['taxonomy_slug'] ) );
+					if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+						return implode( ', ', wp_list_pluck( $terms, 'name' ) );
+					}
+				}
+				return '';
+			case 'woo_price':
+				if ( function_exists( 'wc_get_product' ) ) {
+					$product = wc_get_product( $post_id );
+					return $product ? $product->get_price_html() : '';
+				}
+				return '';
+			case 'woo_sku':
+				if ( function_exists( 'wc_get_product' ) ) {
+					$product = wc_get_product( $post_id );
+					return $product ? $product->get_sku() : '';
+				}
+				return '';
+			case 'woo_stock':
+				if ( function_exists( 'wc_get_product' ) ) {
+					$product = wc_get_product( $post_id );
+					if ( $product ) {
+						return $product->is_in_stock() ? esc_html__( 'In Stock', 'e-com-addons' ) : esc_html__( 'Out of Stock', 'e-com-addons' );
+					}
+				}
+				return '';
+			default:
+				return '';
+		}
+	}
+
+	/**
+	 * Helper function to format and render cell contents securely.
+	 */
+	protected function render_cell_content( $cell, $post_id = 0 ) {
+		$type = ! empty( $cell['cell_type'] ) ? $cell['cell_type'] : 'text';
+
+		switch ( $type ) {
+			case 'image':
+				$img_url = ! empty( $cell['cell_image']['url'] ) ? esc_url( $cell['cell_image']['url'] ) : '';
+				if ( ! empty( $img_url ) ) {
+					$radius = isset( $cell['image_border_radius']['size'] ) ? intval( $cell['image_border_radius']['size'] ) : 4;
+					echo '<img src="' . $img_url . '" style="border-radius: ' . $radius . 'px; max-width: 100px; height: auto;" class="ecma-cell-img" alt="" />';
+				}
+				break;
+
+			case 'icon':
+				if ( ! empty( $cell['cell_icon']['value'] ) ) {
+					echo '<span class="ecma-cell-icon">';
+					\Elementor\Icons_Manager::render_icon( $cell['cell_icon'], [ 'aria-hidden' => 'true' ] );
+					echo '</span>';
+				}
+				break;
+
+			case 'button':
+				$btn_text   = ! empty( $cell['btn_text'] ) ? esc_html( $cell['btn_text'] ) : esc_html__( 'Click Here', 'e-com-addons' );
+				$btn_url    = ! empty( $cell['btn_url']['url'] ) ? esc_url( $cell['btn_url']['url'] ) : '#';
+				$btn_target = ( 'yes' === ( $cell['btn_target'] ?? 'no' ) ) ? ' target="_blank" rel="noopener noreferrer"' : '';
+				echo '<a href="' . $btn_url . '" class="ecma-btn"' . $btn_target . '>' . $btn_text . '</a>';
+				break;
+
+			case 'badge':
+				$badge_text = ! empty( $cell['badge_text'] ) ? esc_html( $cell['badge_text'] ) : esc_html__( 'Featured', 'e-com-addons' );
+				$badge_type = ! empty( $cell['badge_style_type'] ) ? esc_attr( $cell['badge_style_type'] ) : 'popular';
+				
+				$badge_style = '';
+				if ( 'custom' === $badge_type ) {
+					$bg  = ! empty( $cell['badge_bg_color'] ) ? esc_attr( $cell['badge_bg_color'] ) : '#6366f1';
+					$txt = ! empty( $cell['badge_text_color'] ) ? esc_attr( $cell['badge_text_color'] ) : '#ffffff';
+					$badge_style = ' style="background-color: ' . $bg . '; color: ' . $txt . ';"';
+				}
+				
+				echo '<span class="ecma-badge ecma-badge-' . $badge_type . '"' . $badge_style . '>' . $badge_text . '</span>';
+				break;
+
+			case 'text':
+			default:
+				echo wp_kses_post( $cell['cell_text'] );
+				break;
+		}
+	}
+}

@@ -1,0 +1,296 @@
+/**
+ * Dynamic Data Table Frontend Stylesheet
+ */
+
+.ecma-table-wrapper {
+	margin: 20px 0;
+	width: 100%;
+	font-family: inherit;
+}
+
+/* 1. Search Box Styling */
+.ecma-table-search-container {
+	position: relative;
+	margin-bottom: 15px;
+	display: inline-flex;
+	align-items: center;
+	max-width: 350px;
+	width: 100%;
+}
+
+.ecma-table-search-input {
+	width: 100%;
+	padding: 10px 15px 10px 40px !important;
+	border: 1px solid #d1d5db !important;
+	background-color: #ffffff !important;
+	color: #1f2937 !important;
+	border-radius: 6px !important;
+	font-size: 14px !important;
+	transition: all 0.25s ease-in-out !important;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+}
+
+.ecma-table-search-input:focus {
+	outline: none !important;
+	border-color: #6366f1 !important;
+	box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+}
+
+.ecma-search-icon {
+	position: absolute;
+	left: 12px;
+	color: #9ca3af;
+	font-size: 18px;
+	pointer-events: none;
+}
+
+/* 2. Table Container */
+.ecma-table-container {
+	width: 100%;
+	border: 1px solid #e5e7eb;
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+	background-color: #ffffff;
+	overflow: hidden;
+}
+
+.ecma-table-scroll {
+	overflow-x: auto;
+}
+
+.ecma-data-table {
+	width: 100%;
+	border-collapse: collapse;
+	border-spacing: 0;
+	font-size: 14px;
+}
+
+/* 3. Table Header & Sorting */
+.ecma-data-table thead th {
+	font-weight: 600;
+	position: relative;
+	vertical-align: middle;
+	border-bottom: 2px solid #e5e7eb;
+	user-select: none;
+}
+
+.ecma-data-table thead th[data-sortable="true"] {
+	cursor: pointer;
+}
+
+.ecma-data-table thead th[data-sortable="true"]:hover {
+	filter: brightness(1.15);
+}
+
+.ecma-th-inner {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.ecma-sort-trigger {
+	font-size: 16px;
+	color: #9ca3af;
+	transition: color 0.2s ease;
+}
+
+.ecma-data-table thead th:hover .ecma-sort-trigger {
+	color: #ffffff;
+}
+
+.ecma-data-table thead th.asc .ecma-sort-trigger {
+	color: #3b82f6 !important;
+	transform: rotate(180deg);
+}
+
+.ecma-data-table thead th.desc .ecma-sort-trigger {
+	color: #3b82f6 !important;
+	transform: none;
+}
+
+/* 4. Column Highlight Styles */
+.ecma-col-highlight {
+	background-color: rgba(99, 102, 241, 0.03) !important;
+	box-shadow: inset 1px 0 0 rgba(0, 0, 0, 0.04), inset -1px 0 0 rgba(0, 0, 0, 0.04);
+}
+
+thead th.ecma-col-highlight {
+	background-color: #2e354f !important; /* Slightly distinct headers */
+}
+
+/* 5. Recommended Badge for Columns */
+.ecma-recommended-badge {
+	position: absolute;
+	top: -12px;
+	left: 50%;
+	transform: translateX(-50%);
+	background: linear-gradient(135deg, #f59e0b, #d97706);
+	color: #ffffff;
+	font-size: 10px;
+	font-weight: 700;
+	padding: 2px 8px;
+	border-radius: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	box-shadow: 0 2px 4px rgba(217, 119, 6, 0.2);
+	white-space: nowrap;
+}
+
+/* 6. Sticky Header Support */
+.ecma-table-sticky {
+	overflow-y: auto;
+}
+
+.ecma-table-sticky thead th {
+	position: sticky;
+	z-index: 5;
+}
+
+/* 7. Rows & Zebra Striping */
+.ecma-data-table tbody tr {
+	transition: background-color 0.2s ease;
+	border-bottom: 1px solid #f3f4f6;
+}
+
+.ecma-data-table tbody tr.ecma-row-highlight {
+	border-left: 4px solid #f59e0b;
+}
+
+/* 8. Cells Styling */
+.ecma-data-table tbody td {
+	line-height: 1.5;
+	vertical-align: middle;
+}
+
+/* Image Cell styling */
+.ecma-cell-img {
+	object-fit: cover;
+	border: 1px solid #e5e7eb;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Icon Cell styling */
+.ecma-cell-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: #10b981;
+	font-size: 18px;
+}
+
+/* Button Cell styling */
+.ecma-btn {
+	display: inline-block;
+	text-decoration: none;
+	font-weight: 500;
+	font-size: 13px;
+	text-align: center;
+	transition: all 0.2s ease-in-out;
+	cursor: pointer;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.ecma-btn:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+	filter: brightness(1.1);
+}
+
+.ecma-btn:active {
+	transform: translateY(0);
+}
+
+/* Status Badges */
+.ecma-badge {
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 600;
+	padding: 3px 10px;
+	border-radius: 20px;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+	white-space: nowrap;
+}
+
+.ecma-badge-popular {
+	background-color: #e0e7ff;
+	color: #4f46e5;
+}
+
+.ecma-badge-best-seller {
+	background-color: #ffedd5;
+	color: #ea580c;
+}
+
+.ecma-badge-featured {
+	background-color: #d1fae5;
+	color: #059669;
+}
+
+.ecma-badge-new {
+	background-color: #e0f2fe;
+	color: #0284c7;
+}
+
+/* 9. Mobile Stacked responsive layout */
+@media (max-width: 767px) {
+	.ecma-table-stack {
+		border: none;
+		box-shadow: none;
+		background: transparent;
+	}
+
+	.ecma-table-stack table,
+	.ecma-table-stack tbody,
+	.ecma-table-stack tr,
+	.ecma-table-stack td {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.ecma-table-stack thead {
+		display: none; /* Hide header rows on stacked cards layout */
+	}
+
+	.ecma-table-stack tr {
+		background-color: #ffffff;
+		border: 1px solid #e5e7eb;
+		border-radius: 8px;
+		margin-bottom: 16px;
+		padding: 12px 16px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+	}
+
+	.ecma-table-stack tr.ecma-row-highlight {
+		border-left: 4px solid #f59e0b;
+	}
+
+	.ecma-table-stack td {
+		display: flex !important;
+		justify-content: space-between;
+		align-items: center;
+		padding: 10px 0 !important;
+		border-bottom: 1px solid #f3f4f6 !important;
+		text-align: right !important;
+		font-size: 13px;
+	}
+
+	.ecma-table-stack td:last-child {
+		border-bottom: none !important;
+	}
+
+	.ecma-table-stack td::before {
+		content: attr(data-label);
+		font-weight: 600;
+		color: #4b5563;
+		text-align: left;
+		margin-right: 15px;
+		font-size: 13px;
+	}
+
+	/* Disable inner highlight column style on mobile card layouts */
+	.ecma-table-stack .ecma-col-highlight {
+		background-color: transparent !important;
+		box-shadow: none !important;
+	}
+}
